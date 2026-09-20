@@ -10,6 +10,7 @@ export default function Dashboard() {
     rentScheduled: 0,
     rentCollected: 0
   });
+  const [renewals, setRenewals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function Dashboard() {
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(today.getDate() + 30);
         
-        const renewals = activeLeases.filter((l: any) => {
+        const upcomingRenewals = activeLeases.filter((l: any) => {
           const end = new Date(l.endDate);
           return end <= thirtyDaysFromNow && end >= today;
         });
@@ -49,10 +50,11 @@ export default function Dashboard() {
 
         setStats({
           totalLeases: activeLeases.length,
-          renewalsDue: renewals.length,
+          renewalsDue: upcomingRenewals.length,
           rentScheduled: scheduled,
           rentCollected: collected
         });
+        setRenewals(upcomingRenewals);
       } catch (error) {
         console.error('Failed to load dashboard data');
       } finally {
@@ -96,10 +98,40 @@ export default function Dashboard() {
         </div>
       )}
       
-      {/* Expiration Early Warning Feed could go here */}
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Early Warning Feed</h2>
-      <div className="glass-panel">
-        <p style={{ color: 'var(--text-secondary)' }}>All systems operational. No immediate actions required.</p>
+      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Renewal Alerts (30 Days)</h2>
+      <div className="glass-panel" style={{ padding: '1.5rem' }}>
+        {renewals.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)' }}>All leases are secure. No upcoming renewals in the next 30 days.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            {renewals.map((r) => {
+              const daysLeft = Math.ceil((new Date(r.endDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+              return (
+                <div key={r.id} style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  padding: '1rem',
+                  border: '1px solid var(--border-color)',
+                  borderLeft: '4px solid var(--warning-color)',
+                  borderRadius: '8px',
+                  background: 'rgba(245, 158, 11, 0.05)'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{r.tenant?.name || 'Unknown Tenant'}</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                      {r.unit?.property?.name || ''} - {r.unit?.shopNumber || ''}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--warning-color)' }}>{daysLeft} days left</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Ends {new Date(r.endDate).toLocaleDateString()}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
     </DashboardLayout>

@@ -8,6 +8,10 @@ export default function Invoices() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  });
 
   const loadInvoices = () => {
     setLoading(true);
@@ -22,11 +26,11 @@ export default function Invoices() {
 
   const handleGenerate = async () => {
     setGenerating(true);
-    const today = new Date();
+    const [year, month] = selectedMonth.split('-');
     try {
       await fetchApi('/invoices/generate', {
         method: 'POST',
-        body: JSON.stringify({ targetMonth: today.getMonth() + 1, targetYear: today.getFullYear() })
+        body: JSON.stringify({ targetMonth: parseInt(month, 10), targetYear: parseInt(year, 10) })
       });
       loadInvoices();
     } catch (err) {
@@ -52,7 +56,23 @@ export default function Invoices() {
     <DashboardLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Billing & Ledger</h1>
-        <Button onClick={handleGenerate} isLoading={generating}>+ Generate This Month</Button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <input 
+            type="month" 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--surface-color)',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              fontFamily: 'inherit'
+            }}
+          />
+          <Button onClick={handleGenerate} isLoading={generating}>+ Generate</Button>
+        </div>
       </div>
 
       {loading ? (

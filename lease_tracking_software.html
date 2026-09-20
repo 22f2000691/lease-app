@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lease Tracking Software</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --primary:#155eef;
+      --primary-dark:#0b46c5;
+      --text:#172033;
+      --muted:#6b7280;
+      --border:#e4e8ef;
+      --success:#149b5f;
+      --warning:#e99a15;
+      --danger:#d83a48;
+      --shadow:0 8px 30px rgba(19,33,68,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .app{display:flex;min-height:100vh}
+    .sidebar{
+      width:245px;
+      background:#0b1739;
+      color:#fff;
+      padding:22px 16px;
+      position:fixed;
+      inset:0 auto 0 0;
+    }
+    .brand{
+      font-size:22px;
+      font-weight:800;
+      padding:6px 10px 24px;
+      line-height:1.25;
+    }
+    .brand small{display:block;color:#9fb6ef;font-size:12px;font-weight:500;margin-top:4px}
+    .nav button{
+      width:100%;
+      border:0;
+      background:transparent;
+      color:#c9d4ef;
+      text-align:left;
+      padding:12px 13px;
+      border-radius:10px;
+      margin:4px 0;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .nav button:hover,.nav button.active{
+      background:#183064;
+      color:#fff;
+    }
+    .main{
+      margin-left:245px;
+      width:calc(100% - 245px);
+      padding:24px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:20px;
+    }
+    .topbar h1{font-size:27px;margin:0}
+    .topbar p{margin:5px 0 0;color:var(--muted);font-size:13px}
+    .btn{
+      border:0;
+      border-radius:9px;
+      padding:10px 15px;
+      font-weight:650;
+      cursor:pointer;
+    }
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-light{background:#eef3ff;color:var(--primary)}
+    .btn-danger{background:#fff0f1;color:var(--danger)}
+    .grid{display:grid;gap:16px}
+    .stats{grid-template-columns:repeat(4,1fr);margin-bottom:18px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    .stat-label{color:var(--muted);font-size:13px}
+    .stat-value{font-size:28px;font-weight:800;margin-top:8px}
+    .stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .section{display:none}
+    .section.active{display:block}
+    .section-title{
+      display:flex;justify-content:space-between;align-items:center;
+      margin:0 0 13px;
+    }
+    .section-title h2{margin:0;font-size:19px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
+    th{color:#64708a;font-size:12px;background:#fafbfe;white-space:nowrap}
+    td{white-space:nowrap}
+    .badge{
+      display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700;
+    }
+    .active-badge{color:#0d7e4a;background:#e9f8f0}
+    .due-badge{color:#b06a00;background:#fff4da}
+    .expired-badge{color:#b52635;background:#ffe9eb}
+    .paid-badge{color:#0d7e4a;background:#e9f8f0}
+    .pending-badge{color:#b06a00;background:#fff4da}
+    .overdue-badge{color:#b52635;background:#ffe9eb}
+    .two-col{grid-template-columns:1.3fr .7fr}
+    .empty{
+      text-align:center;padding:26px;color:var(--muted);font-size:13px
+    }
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+    label{font-size:12px;font-weight:700;color:#556078}
+    input,select,textarea{
+      width:100%;
+      margin-top:6px;
+      padding:10px 11px;
+      border:1px solid #d6dce8;
+      border-radius:8px;
+      outline:none;
+      background:#fff;
+      font:inherit;
+    }
+    input:focus,select:focus,textarea:focus{border-color:#8db0ff;box-shadow:0 0 0 3px #edf3ff}
+    textarea{min-height:80px;resize:vertical}
+    .full{grid-column:1/-1}
+    .modal{
+      position:fixed;inset:0;background:rgba(7,15,35,.55);
+      display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+    }
+    .modal.show{display:flex}
+    .modal-box{
+      width:min(820px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 22px 70px rgba(0,0,0,.25);
+    }
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .modal-head h3{margin:0}
+    .x{border:0;background:#f1f4f9;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px}
+    .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+    .renewals-list{display:grid;gap:10px}
+    .renewal-item{
+      border:1px solid var(--border);border-left:4px solid var(--warning);
+      border-radius:10px;padding:12px;background:#fffdfa
+    }
+    .renewal-item strong{display:block;margin-bottom:4px}
+    .renewal-item small{color:var(--muted)}
+    .summary-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:9px 0;border-bottom:1px solid var(--border);font-size:13px
+    }
+    .summary-row:last-child{border-bottom:0}
+    .money{font-weight:800}
+    .toolbar{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px
+    }
+    .toolbar input,.toolbar select{width:auto;margin:0}
+    .file-chip{
+      display:inline-flex;align-items:center;gap:7px;background:#eef3ff;
+      color:#244c9b;padding:6px 8px;border-radius:8px;font-size:11px
+    }
+    .note{
+      background:#fff8e8;border:1px solid #f4dfa6;border-radius:10px;padding:11px;font-size:12px;color:#70520c
+    }
+    @media (max-width:1000px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .two-col{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      .sidebar{width:70px;padding:18px 8px}
+      .brand{font-size:0;padding:5px 6px 18px}
+      .brand:before{content:"LT";font-size:20px}
+      .brand small{display:none}
+      .nav button{font-size:0;padding:13px 8px;text-align:center}
+      .nav button:before{font-size:18px}
+      .nav button[data-target="dashboard"]:before{content:"▦"}
+      .nav button[data-target="properties"]:before{content:"⌂"}
+      .nav button[data-target="leases"]:before{content:"▤"}
+      .nav button[data-target="rent"]:before{content:"₹"}
+      .nav button[data-target="renewals"]:before{content:"⏰"}
+      .main{margin-left:70px;width:calc(100% - 70px);padding:14px}
+      .form-grid{grid-template-columns:1fr}
+      .full{grid-column:auto}
+      .stats{grid-template-columns:1fr}
+      .topbar{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">LEASE TRACKER<small>Property & Rent Management</small></div>
+    <div class="nav">
+      <button class="active" data-target="dashboard">Dashboard</button>
+      <button data-target="properties">Properties / Locations</button>
+      <button data-target="leases">Tenants & Leases</button>
+      <button data-target="rent">Monthly Rent Collection</button>
+      <button data-target="renewals">Upcoming Renewals</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p>Lease status, rent collection and renewal reminders in one place.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openLeaseModal()">+ Add Lease</button>
+    </div>
+
+    <section id="dashboard" class="section active">
+      <div class="grid stats">
+        <div class="card"><div class="stat-label">Active Leases</div><div class="stat-value" id="activeCount">0</div><div class="stat-sub">Currently running</div></div>
+        <div class="card"><div class="stat-label">Upcoming Renewals</div><div class="stat-value" id="renewalCount">0</div><div class="stat-sub">Next 30 days</div></div>
+        <div class="card"><div class="stat-label">Monthly Rent Due</div><div class="stat-value" id="monthlyDue">₹0</div><div class="stat-sub">Current month</div></div>
+        <div class="card"><div class="stat-label">Monthly Rent Collected</div><div class="stat-value" id="monthlyCollected">₹0</div><div class="stat-sub">Current month</div></div>
+      </div>
+
+      <div class="grid two-col">
+        <div class="card">
+          <div class="section-title"><h2>Lease Status</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tenant</th><th>Property / Shop</th><th>Rent</th><th>End Date</th><th>Status</th></tr></thead>
+              <tbody id="dashboardLeaseTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h2>Renewal Alerts</h2></div>
+          <div id="dashboardRenewals" class="renewals-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="properties" class="section">
+      <div class="card">
+        <div class="section-title">
+          <h2>Property / Location Master</h2>
+          <button class="btn btn-primary" onclick="openPropertyModal()">+ Add Property</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Location / Property</th><th>Address</th><th>Total Shops</th><th>Actions</th></tr></thead>
+            <tbody id="propertyTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="leases" class="section">
+      <div class="card">
+        <div class="section-title">
+          <h2>Tenant & Lease Register</h2>
+          <button class="btn btn-primary" onclick="openLeaseModal()">+ Add Lease</button>
+        </div>
+        <div class="toolbar">
+          <input type="text" id="leaseSearch" placeholder="Search tenant / shop..." oninput="renderLeases()">
+          <select id="leaseStatusFilter" onchange="renderLeases()">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Renewal Due">Renewal Due</option>
+            <option value="Expired">Expired</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tenant</th><th>Address</th><th>Property</th><th>Shop</th><th>Start</th><th>End</th><th>Rent</th><th>Yearly Increment</th><th>Status</th><th>Document</th><th>Actions</th></tr></thead>
+            <tbody id="leaseTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="rent" class="section">
+      <div class="card">
+        <div class="section-title"><h2>Monthly Rent Collection</h2></div>
+        <div class="toolbar">
+          <input type="month" id="rentMonth" onchange="renderRent()">
+          <button class="btn btn-light" onclick="generateRentForMonth()">Generate Current Lease Rent</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tenant</th><th>Property / Shop</th><th>Rent Amount</th><th>Due Date</th><th>Status</th><th>Paid Date</th><th>Action</th></tr></thead>
+            <tbody id="rentTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="renewals" class="section">
+      <div class="card">
+        <div class="section-title"><h2>Upcoming Renewals - 30 Day Reminder</h2></div>
+        <div id="renewalFullList" class="renewals-list"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Property Modal -->
+<div class="modal" id="propertyModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Add Property / Location</h3><button class="x" onclick="closeModal('propertyModal')">×</button></div>
+    <form id="propertyForm">
+      <div class="form-grid">
+        <label>Property / Location Name
+          <input id="propertyName" required placeholder="Example: Fancy Bazar Complex">
+        </label>
+        <label>Total Shops / Units
+          <input id="propertyUnits" type="number" min="0" placeholder="10">
+        </label>
+        <label class="full">Property Address
+          <textarea id="propertyAddress" required placeholder="Full property location/address"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-light" onclick="closeModal('propertyModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Property</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Lease Modal -->
+<div class="modal" id="leaseModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="leaseModalTitle">Add Tenant Lease</h3><button class="x" onclick="closeModal('leaseModal')">×</button></div>
+    <form id="leaseForm">
+      <input type="hidden" id="leaseId">
+      <div class="form-grid">
+        <label>Tenant Name
+          <input id="tenantName" required placeholder="Tenant full name">
+        </label>
+        <label>Mobile Number
+          <input id="tenantMobile" placeholder="Mobile number">
+        </label>
+        <label class="full">Tenant Address
+          <textarea id="tenantAddress" required placeholder="Tenant address"></textarea>
+        </label>
+        <label>Property / Location
+          <select id="leaseProperty" required></select>
+        </label>
+        <label>Shop No. / Shop Name
+          <input id="shopName" required placeholder="Shop 101 / ABC Store">
+        </label>
+        <label>Rental Start Date
+          <input id="startDate" type="date" required>
+        </label>
+        <label>Rental End Date
+          <input id="endDate" type="date" required>
+        </label>
+        <label>Monthly Rent Amount (₹)
+          <input id="rentAmount" type="number" min="0" step="0.01" required>
+        </label>
+        <label>Annual Rent Increment (%)
+          <input id="incrementPercent" type="number" min="0" step="0.01" value="0">
+        </label>
+        <label>Rent Due Day
+          <input id="dueDay" type="number" min="1" max="28" value="5">
+        </label>
+        <label>Lease Status
+          <select id="manualStatus">
+            <option value="">Auto Calculate</option>
+            <option>Active</option>
+            <option>Renewal Due</option>
+            <option>Expired</option>
+          </select>
+        </label>
+        <label class="full">Upload Agreement / Tenant Document
+          <input id="leaseDocument" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+          <div id="existingDoc" style="margin-top:7px"></div>
+        </label>
+        <div class="full note">
+          Reminder is automatically shown when the lease end date is within 30 days. Annual increment is used to calculate future rental amounts based on completed lease years.
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-light" onclick="closeModal('leaseModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Lease</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const DB = {
+    get(key){ return JSON.parse(localStorage.getItem('leaseTracker_'+key) || '[]'); },
+    set(key,val){ localStorage.setItem('leaseTracker_'+key, JSON.stringify(val)); }
+  };
+
+  let properties = DB.get('properties');
+  let leases = DB.get('leases');
+  let rents = DB.get('rents');
+
+  if(!properties.length){
+    properties = [
+      {id:'p1',name:'City Centre Complex',address:'Main Road, Guwahati',units:8}
+    ];
+    DB.set('properties',properties);
+  }
+
+  const money = n => '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+  const todayISO = () => new Date().toISOString().slice(0,10);
+
+  function daysBetween(a,b){
+    const d1 = new Date(a+'T00:00:00');
+    const d2 = new Date(b+'T00:00:00');
+    return Math.ceil((d2-d1)/86400000);
+  }
+
+  function leaseStatus(l){
+    if(l.manualStatus) return l.manualStatus;
+    const diff = daysBetween(todayISO(), l.endDate);
+    if(diff < 0) return 'Expired';
+    if(diff <= 30) return 'Renewal Due';
+    return 'Active';
+  }
+
+  function currentRent(l, targetDate = new Date()){
+    const start = new Date(l.startDate+'T00:00:00');
+    let years = targetDate.getFullYear() - start.getFullYear();
+    const anniversary = new Date(targetDate.getFullYear(), start.getMonth(), start.getDate());
+    if(targetDate < anniversary) years--;
+    years = Math.max(0, years);
+    return Number(l.rentAmount) * Math.pow(1 + Number(l.incrementPercent||0)/100, years);
+  }
+
+  function switchSection(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
+    const titles = {
+      dashboard:'Dashboard',
+      properties:'Properties / Locations',
+      leases:'Tenants & Leases',
+      rent:'Monthly Rent Collection',
+      renewals:'Upcoming Renewals'
+    };
+    document.getElementById('pageTitle').textContent = titles[id];
+    if(id==='rent') renderRent();
+    if(id==='renewals') renderRenewals();
+  }
+
+  document.querySelectorAll('.nav button').forEach(btn=>{
+    btn.addEventListener('click',()=>switchSection(btn.dataset.target));
+  });
+
+  function openPropertyModal(){
+    document.getElementById('propertyForm').reset();
+    document.getElementById('propertyModal').classList.add('show');
+  }
+
+  function loadPropertyOptions(){
+    const sel=document.getElementById('leaseProperty');
+    sel.innerHTML='<option value="">Select property / location</option>'+
+      properties.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  }
+
+  function openLeaseModal(id=''){
+    document.getElementById('leaseForm').reset();
+    document.getElementById('leaseId').value='';
+    document.getElementById('existingDoc').innerHTML='';
+    document.getElementById('incrementPercent').value='0';
+    document.getElementById('dueDay').value='5';
+    loadPropertyOptions();
+    document.getElementById('leaseModalTitle').textContent='Add Tenant Lease';
+
+    if(id){
+      const l=leases.find(x=>x.id===id);
+      if(!l)return;
+      document.getElementById('leaseModalTitle').textContent='Edit Tenant Lease';
+      document.getElementById('leaseId').value=l.id;
+      document.getElementById('tenantName').value=l.tenantName;
+      document.getElementById('tenantMobile').value=l.tenantMobile||'';
+      document.getElementById('tenantAddress').value=l.tenantAddress;
+      document.getElementById('leaseProperty').value=l.propertyId;
+      document.getElementById('shopName').value=l.shopName;
+      document.getElementById('startDate').value=l.startDate;
+      document.getElementById('endDate').value=l.endDate;
+      document.getElementById('rentAmount').value=l.rentAmount;
+      document.getElementById('incrementPercent').value=l.incrementPercent||0;
+      document.getElementById('dueDay').value=l.dueDay||5;
+      document.getElementById('manualStatus').value=l.manualStatus||'';
+      if(l.documentName){
+        document.getElementById('existingDoc').innerHTML=`<span class="file-chip">📎 ${escapeHtml(l.documentName)}</span>`;
+      }
+    }
+    document.getElementById('leaseModal').classList.add('show');
+  }
+
+  function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+  document.getElementById('propertyForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    properties.push({
+      id:'p'+Date.now(),
+      name:document.getElementById('propertyName').value.trim(),
+      address:document.getElementById('propertyAddress').value.trim(),
+      units:Number(document.getElementById('propertyUnits').value||0)
+    });
+    DB.set('properties',properties);
+    closeModal('propertyModal');
+    renderAll();
+  });
+
+  document.getElementById('leaseForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const id=document.getElementById('leaseId').value;
+    const old=id?leases.find(x=>x.id===id):null;
+    const file=document.getElementById('leaseDocument').files[0];
+
+    let documentName=old?.documentName||'';
+    let documentData=old?.documentData||'';
+
+    if(file){
+      documentName=file.name;
+      // LocalStorage is small. Keep small files only.
+      if(file.size <= 900000){
+        documentData=await fileToDataURL(file);
+      }else{
+        documentData='';
+        alert('Document name saved, but this browser demo stores only small attachments under about 900 KB. For large files, connect server/cloud storage.');
+      }
+    }
+
+    const lease={
+      id:id || 'l'+Date.now(),
+      tenantName:document.getElementById('tenantName').value.trim(),
+      tenantMobile:document.getElementById('tenantMobile').value.trim(),
+      tenantAddress:document.getElementById('tenantAddress').value.trim(),
+      propertyId:document.getElementById('leaseProperty').value,
+      shopName:document.getElementById('shopName').value.trim(),
+      startDate:document.getElementById('startDate').value,
+      endDate:document.getElementById('endDate').value,
+      rentAmount:Number(document.getElementById('rentAmount').value),
+      incrementPercent:Number(document.getElementById('incrementPercent').value||0),
+      dueDay:Number(document.getElementById('dueDay').value||5),
+      manualStatus:document.getElementById('manualStatus').value,
+      documentName,documentData
+    };
+
+    if(new Date(lease.endDate) <= new Date(lease.startDate)){
+      alert('Rental end date must be after rental start date.');
+      return;
+    }
+
+    if(id) leases=leases.map(x=>x.id===id?lease:x);
+    else leases.push(lease);
+
+    DB.set('leases',leases);
+    closeModal('leaseModal');
+    renderAll();
+  });
+
+  function fileToDataURL(file){
+    return new Promise(resolve=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function getProperty(id){ return properties.find(p=>p.id===id); }
+
+  function escapeHtml(str=''){
+    return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  function renderProperties(){
+    const tbody=document.getElementById('propertyTable');
+    if(!properties.length){tbody.innerHTML='<tr><td colspan="4" class="empty">No properties added.</td></tr>';return;}
+    tbody.innerHTML=properties.map(p=>`
+      <tr>
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td>${escapeHtml(p.address)}</td>
+        <td>${p.units||0}</td>
+        <td><button class="btn btn-danger" onclick="deleteProperty('${p.id}')">Delete</button></td>
+      </tr>`).join('');
+  }
+
+  function deleteProperty(id){
+    if(leases.some(l=>l.propertyId===id)){
+      alert('This property is used in a lease. Remove/change the lease first.');
+      return;
+    }
+    if(confirm('Delete this property?')){
+      properties=properties.filter(p=>p.id!==id);
+      DB.set('properties',properties);
+      renderAll();
+    }
+  }
+
+  function renderLeases(){
+    const search=(document.getElementById('leaseSearch')?.value||'').toLowerCase();
+    const filter=document.getElementById('leaseStatusFilter')?.value||'';
+    let data=leases.filter(l=>{
+      const p=getProperty(l.propertyId);
+      const text=[l.tenantName,l.shopName,p?.name].join(' ').toLowerCase();
+      const st=leaseStatus(l);
+      return (!search||text.includes(search)) && (!filter||st===filter);
+    });
+    const tbody=document.getElementById('leaseTable');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="11" class="empty">No lease records found.</td></tr>';return;}
+    tbody.innerHTML=data.map(l=>{
+      const p=getProperty(l.propertyId);
+      const st=leaseStatus(l);
+      const cls=st==='Active'?'active-badge':st==='Renewal Due'?'due-badge':'expired-badge';
+      const doc=l.documentName
+        ? `<button class="btn btn-light" onclick="openDocument('${l.id}')">📎 ${escapeHtml(l.documentName)}</button>`
+        : '-';
+      return `<tr>
+        <td><strong>${escapeHtml(l.tenantName)}</strong><br><small>${escapeHtml(l.tenantMobile||'')}</small></td>
+        <td>${escapeHtml(l.tenantAddress)}</td>
+        <td>${escapeHtml(p?.name||'-')}</td>
+        <td>${escapeHtml(l.shopName)}</td>
+        <td>${l.startDate}</td>
+        <td>${l.endDate}</td>
+        <td>${money(currentRent(l))}</td>
+        <td>${Number(l.incrementPercent||0)}%</td>
+        <td><span class="badge ${cls}">${st}</span></td>
+        <td>${doc}</td>
+        <td>
+          <button class="btn btn-light" onclick="openLeaseModal('${l.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteLease('${l.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openDocument(id){
+    const l=leases.find(x=>x.id===id);
+    if(!l?.documentData){
+      alert('This demo only has the document name. File data is not stored for large attachments.');
+      return;
+    }
+    const w=window.open();
+    w.document.write(`<iframe src="${l.documentData}" style="border:0;width:100%;height:100vh"></iframe>`);
+  }
+
+  function deleteLease(id){
+    if(confirm('Delete this lease and related rent records?')){
+      leases=leases.filter(l=>l.id!==id);
+      rents=rents.filter(r=>r.leaseId!==id);
+      DB.set('leases',leases);
+      DB.set('rents',rents);
+      renderAll();
+    }
+  }
+
+  function renderDashboard(){
+    const active=leases.filter(l=>leaseStatus(l)==='Active').length;
+    const renew=leases.filter(l=>leaseStatus(l)==='Renewal Due').length;
+    document.getElementById('activeCount').textContent=active;
+    document.getElementById('renewalCount').textContent=renew;
+
+    const month=new Date().toISOString().slice(0,7);
+    const monthRents=rents.filter(r=>r.month===month);
+    document.getElementById('monthlyDue').textContent=money(monthRents.reduce((s,r)=>s+Number(r.amount),0));
+    document.getElementById('monthlyCollected').textContent=money(monthRents.filter(r=>r.status==='Paid').reduce((s,r)=>s+Number(r.amount),0));
+
+    const tbody=document.getElementById('dashboardLeaseTable');
+    if(!leases.length) tbody.innerHTML='<tr><td colspan="5" class="empty">No lease records yet.</td></tr>';
+    else tbody.innerHTML=leases.slice().sort((a,b)=>a.endDate.localeCompare(b.endDate)).slice(0,8).map(l=>{
+      const p=getProperty(l.propertyId), st=leaseStatus(l);
+      const cls=st==='Active'?'active-badge':st==='Renewal Due'?'due-badge':'expired-badge';
+      return `<tr><td><strong>${escapeHtml(l.tenantName)}</strong></td><td>${escapeHtml(p?.name||'-')} / ${escapeHtml(l.shopName)}</td><td>${money(currentRent(l))}</td><td>${l.endDate}</td><td><span class="badge ${cls}">${st}</span></td></tr>`;
+    }).join('');
+
+    const due=leases.filter(l=>leaseStatus(l)==='Renewal Due').sort((a,b)=>a.endDate.localeCompare(b.endDate));
+    document.getElementById('dashboardRenewals').innerHTML=due.length?due.slice(0,5).map(renewalCard).join(''):'<div class="empty">No renewals due in next 30 days.</div>';
+  }
+
+  function renewalCard(l){
+    const p=getProperty(l.propertyId);
+    const d=daysBetween(todayISO(),l.endDate);
+    return `<div class="renewal-item"><strong>${escapeHtml(l.tenantName)} — ${escapeHtml(l.shopName)}</strong><small>${escapeHtml(p?.name||'-')} • Ends ${l.endDate} • ${d} day${d===1?'':'s'} left • Rent ${money(currentRent(l))}</small></div>`;
+  }
+
+  function renderRenewals(){
+    const due=leases.filter(l=>leaseStatus(l)==='Renewal Due').sort((a,b)=>a.endDate.localeCompare(b.endDate));
+    document.getElementById('renewalFullList').innerHTML=due.length?due.map(renewalCard).join(''):'<div class="empty">No leases ending within 30 days.</div>';
+  }
+
+  function monthDate(month,day){
+    const [y,m]=month.split('-').map(Number);
+    const max=new Date(y,m,0).getDate();
+    return `${month}-${String(Math.min(day,max)).padStart(2,'0')}`;
+  }
+
+  function generateRentForMonth(){
+    const month=document.getElementById('rentMonth').value;
+    if(!month)return;
+    const target=new Date(month+'-15T00:00:00');
+    leases.forEach(l=>{
+      const startMonth=l.startDate.slice(0,7);
+      const endMonth=l.endDate.slice(0,7);
+      if(month < startMonth || month > endMonth) return;
+      if(rents.some(r=>r.leaseId===l.id && r.month===month)) return;
+      rents.push({
+        id:'r'+Date.now()+Math.random().toString(16).slice(2),
+        leaseId:l.id,
+        month,
+        amount:Math.round(currentRent(l,target)*100)/100,
+        dueDate:monthDate(month,l.dueDay||5),
+        status:'Pending',
+        paidDate:''
+      });
+    });
+    DB.set('rents',rents);
+    renderAll();
+  }
+
+  function renderRent(){
+    const month=document.getElementById('rentMonth').value;
+    const data=rents.filter(r=>r.month===month);
+    const tbody=document.getElementById('rentTable');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="7" class="empty">No rent entries for this month. Click "Generate Current Lease Rent".</td></tr>';return;}
+    tbody.innerHTML=data.map(r=>{
+      const l=leases.find(x=>x.id===r.leaseId);
+      if(!l)return '';
+      const p=getProperty(l.propertyId);
+      let status=r.status;
+      if(status!=='Paid' && r.dueDate < todayISO()) status='Overdue';
+      const cls=status==='Paid'?'paid-badge':status==='Overdue'?'overdue-badge':'pending-badge';
+      return `<tr>
+        <td><strong>${escapeHtml(l.tenantName)}</strong></td>
+        <td>${escapeHtml(p?.name||'-')} / ${escapeHtml(l.shopName)}</td>
+        <td class="money">${money(r.amount)}</td>
+        <td>${r.dueDate}</td>
+        <td><span class="badge ${cls}">${status}</span></td>
+        <td>${r.paidDate||'-'}</td>
+        <td>${r.status==='Paid'
+          ? `<button class="btn btn-light" onclick="markPending('${r.id}')">Undo</button>`
+          : `<button class="btn btn-primary" onclick="markPaid('${r.id}')">Mark Paid</button>`}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function markPaid(id){
+    const r=rents.find(x=>x.id===id);
+    if(r){r.status='Paid';r.paidDate=todayISO();DB.set('rents',rents);renderAll();}
+  }
+  function markPending(id){
+    const r=rents.find(x=>x.id===id);
+    if(r){r.status='Pending';r.paidDate='';DB.set('rents',rents);renderAll();}
+  }
+
+  function renderAll(){
+    renderProperties();
+    renderLeases();
+    renderDashboard();
+    renderRenewals();
+    renderRent();
+  }
+
+  document.getElementById('rentMonth').value=new Date().toISOString().slice(0,7);
+  window.addEventListener('click',e=>{
+    if(e.target.classList.contains('modal')) e.target.classList.remove('show');
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
