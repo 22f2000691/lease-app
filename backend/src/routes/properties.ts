@@ -37,7 +37,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 // Get a single property with units
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const property = await prisma.property.findUnique({
       where: { id },
       include: { units: true }

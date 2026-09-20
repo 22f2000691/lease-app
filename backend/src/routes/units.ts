@@ -20,7 +20,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 // Get units for a property
 router.get('/property/:propertyId', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { propertyId } = req.params;
+    const propertyId = req.params.propertyId as string;
     const units = await prisma.unit.findMany({
       where: { propertyId },
       orderBy: { shopNumber: 'asc' }
@@ -34,7 +34,7 @@ router.get('/property/:propertyId', authenticate, async (req: AuthRequest, res: 
 // Update unit
 router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { shopNumber, floor, status } = req.body;
     const unit = await prisma.unit.update({
       where: { id },

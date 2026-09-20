@@ -32,7 +32,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 // Get a single tenant
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const tenant = await prisma.tenant.findUnique({
       where: { id },
       include: { leases: { include: { unit: { include: { property: true } } } } }
