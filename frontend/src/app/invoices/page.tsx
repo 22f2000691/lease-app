@@ -74,7 +74,7 @@ export default function Invoices() {
                 <tr key={i.id} style={{ borderTop: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '1rem', fontWeight: 500 }}>{i.targetMonth}/{i.targetYear}</td>
                   <td style={{ padding: '1rem' }}>{i.lease?.tenant?.name}</td>
-                  <td style={{ padding: '1rem', fontWeight: 600 }}>${i.amount.toLocaleString()}</td>
+                  <td style={{ padding: '1rem', fontWeight: 600 }}>₹{i.amount.toLocaleString()}</td>
                   <td style={{ padding: '1rem' }}>
                     <span style={{ 
                       padding: '0.25rem 0.75rem', 

@@ -44,7 +44,7 @@ export default function Leases() {
                   <td style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                     {new Date(l.startDate).toLocaleDateString()} <br/>to<br/> {new Date(l.endDate).toLocaleDateString()}
                   </td>
-                  <td style={{ padding: '1rem' }}>${l.baseRent.toLocaleString()}</td>
+                  <td style={{ padding: '1rem' }}>₹{l.baseRent.toLocaleString()}</td>
                   <td style={{ padding: '1rem' }}>{l.incrementPercentage}% /yr</td>
                   <td style={{ padding: '1rem' }}>
                     <span style={{ 

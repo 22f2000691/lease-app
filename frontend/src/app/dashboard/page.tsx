@@ -85,12 +85,12 @@ export default function Dashboard() {
 
           <div className="glass-panel" style={{ borderLeft: '4px solid #8B5CF6' }}>
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Rent Scheduled (This Month)</h3>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>${stats.rentScheduled.toLocaleString()}</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>₹{stats.rentScheduled.toLocaleString()}</div>
           </div>
 
           <div className="glass-panel" style={{ borderLeft: '4px solid var(--success-color)' }}>
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Rent Collected (This Month)</h3>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>${stats.rentCollected.toLocaleString()}</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>₹{stats.rentCollected.toLocaleString()}</div>
           </div>
           
         </div>

@@ -27,7 +27,7 @@ export function Sidebar() {
     <div style={{
       width: '260px',
       height: '100vh',
-      background: 'rgba(15, 23, 42, 0.95)',
+      background: 'var(--surface-color)',
       borderRight: '1px solid var(--border-color)',
       padding: '1.5rem',
       display: 'flex',
@@ -36,7 +36,7 @@ export function Sidebar() {
       left: 0,
       top: 0,
     }}>
-      <h2 style={{ color: 'white', marginBottom: '2rem', fontSize: '1.25rem', fontWeight: 600 }}>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '2rem', fontSize: '1.25rem', fontWeight: 600 }}>
         Lease System
       </h2>
 
