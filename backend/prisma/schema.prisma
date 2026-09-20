@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Property {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  units     Unit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Unit {
+  id         String          @id @default(uuid())
+  propertyId String
+  property   Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  shopNumber String
+  floor      String
+  status     String          @default("Vacant") // Vacant, Occupied, Maintenance
+  leases     LeaseContract[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model Tenant {
+  id                String          @id @default(uuid())
+  name              String
+  contactPerson     String
+  mobileNumber      String
+  registeredAddress String
+  kycDocumentUrl    String?
+  leases            LeaseContract[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model LeaseContract {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unitId              String
+  unit                Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  startDate           DateTime
+  endDate             DateTime
+  baseRent            Float
+  incrementPercentage Float     // e.g., 5.0 for 5%
+  dueDay              Int       // e.g., 1 for 1st of the month
+  documentUrl         String?
+  status              String    @default("Active") // Active, Expired, Terminated
+  invoices            Invoice[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  leaseId     String
+  lease       LeaseContract @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  targetMonth Int
+  targetYear  Int
+  amount      Float
+  status      String        @default("Pending") // Pending, Paid, Overdue
+  dueDate     DateTime
+  paidDate    DateTime?
+  paymentMode String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
