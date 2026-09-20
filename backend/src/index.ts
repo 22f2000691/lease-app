@@ -8,6 +8,7 @@ import tenantRoutes from './routes/tenants';
 import leaseRoutes from './routes/leases';
 import invoiceRoutes from './routes/invoices';
 import documentRoutes from './routes/documents';
+import { initCronJobs } from './cron/reminders';
 import path from 'path';
 
 dotenv.config();
@@ -34,4 +35,5 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  initCronJobs();
 });
