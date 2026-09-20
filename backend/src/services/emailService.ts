@@ -6,8 +6,20 @@ let transporter: nodemailer.Transporter | null = null;
 async function getTransporter() {
   if (transporter) return transporter;
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-    // Use real SMTP if configured in .env
+  if (process.env.SENDGRID_API_KEY) {
+    // Use SendGrid SMTP if API key is provided
+    transporter = nodemailer.createTransport({
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'apikey', // SendGrid requires the exact string 'apikey' as the username
+        pass: process.env.SENDGRID_API_KEY,
+      },
+    });
+    console.log('📧 Configured SendGrid email transporter');
+  } else if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    // Use generic SMTP if configured in .env
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587', 10),
@@ -40,10 +52,11 @@ async function getTransporter() {
 export async function sendDigestEmail(reportHtml: string) {
   try {
     const mailer = await getTransporter();
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@leaseapp.local';
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL || 'admin@leaseapp.local';
+    const fromEmail = process.env.FROM_EMAIL || 'no-reply@leaseapp.local';
     
     const info = await mailer.sendMail({
-      from: '"LeaseApp System" <no-reply@leaseapp.local>',
+      from: `"LeaseApp System" <${fromEmail}>`,
       to: adminEmail,
       subject: `🚨 Daily Operations Digest - ${new Date().toLocaleDateString()}`,
       html: reportHtml,
@@ -52,7 +65,7 @@ export async function sendDigestEmail(reportHtml: string) {
     console.log(`✅ Digest email sent to ${adminEmail}`);
     
     // If using Ethereal, log the preview URL so the developer can click and see it!
-    if (!process.env.SMTP_HOST) {
+    if (!process.env.SENDGRID_API_KEY && !process.env.SMTP_HOST) {
       console.log('👀 Preview your email here: %s', nodemailer.getTestMessageUrl(info));
     }
   } catch (error) {
