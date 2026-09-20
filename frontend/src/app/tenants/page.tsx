@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchApi } from '@/utils/api';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 
 export default function Tenants() {
+  const router = useRouter();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +20,7 @@ export default function Tenants() {
     <DashboardLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Tenant Register</h1>
-        <Button>+ Add Tenant</Button>
+        <Button onClick={() => router.push('/tenants/new')}>+ Add Tenant</Button>
       </div>
 
       {loading ? (

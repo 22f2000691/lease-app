@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchApi } from '@/utils/api';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 
 export default function Properties() {
+  const router = useRouter();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +20,7 @@ export default function Properties() {
     <DashboardLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Properties Directory</h1>
-        <Button>+ Add Property</Button>
+        <Button onClick={() => router.push('/properties/new')}>+ Add Property</Button>
       </div>
 
       {loading ? (

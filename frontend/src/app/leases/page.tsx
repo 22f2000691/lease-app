@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchApi } from '@/utils/api';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 
 export default function Leases() {
+  const router = useRouter();
   const [leases, setLeases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -27,7 +29,7 @@ export default function Leases() {
     <DashboardLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Lease Contracts</h1>
-        <Button>+ New Lease</Button>
+        <Button onClick={() => router.push('/leases/new')}>+ New Lease</Button>
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>

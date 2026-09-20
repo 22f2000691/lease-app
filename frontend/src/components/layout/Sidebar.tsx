@@ -3,7 +3,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/components/layout/ThemeProvider';
 
-export function Sidebar() {
+export function Sidebar({ isOpen = false, onClose = () => {} }: { isOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
@@ -24,21 +24,26 @@ export function Sidebar() {
   };
 
   return (
-    <div style={{
-      width: '260px',
-      height: '100vh',
-      background: 'var(--surface-color)',
-      borderRight: '1px solid var(--border-color)',
-      padding: '1.5rem',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'fixed',
-      left: 0,
-      top: 0,
-    }}>
-      <h2 style={{ color: 'var(--text-primary)', marginBottom: '2rem', fontSize: '1.25rem', fontWeight: 600 }}>
-        Lease System
-      </h2>
+    <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h2 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+          Lease System
+        </h2>
+        {/* Mobile close button */}
+        <button 
+          onClick={onClose} 
+          className="mobile-close-btn"
+          style={{ 
+            background: 'transparent', 
+            border: 'none', 
+            color: 'var(--text-primary)', 
+            fontSize: '1.5rem', 
+            cursor: 'pointer'
+          }}
+        >
+          ✕
+        </button>
+      </div>
 
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {links.map(link => {
@@ -47,6 +52,7 @@ export function Sidebar() {
             <Link 
               key={link.href} 
               href={link.href}
+              onClick={onClose}
               style={{
                 padding: '0.75rem 1rem',
                 borderRadius: '8px',

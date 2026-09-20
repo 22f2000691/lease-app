@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchApi } from '@/utils/api';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 
 export default function Units() {
+  const router = useRouter();
   const [properties, setProperties] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
   const [units, setUnits] = useState([]);
@@ -33,7 +35,7 @@ export default function Units() {
     <DashboardLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Unit Directory</h1>
-        <Button>+ Add Unit</Button>
+        <Button onClick={() => router.push('/units/new')}>+ Add Unit</Button>
       </div>
 
       {!loading && properties.length > 0 && (
