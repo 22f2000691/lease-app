@@ -17,6 +17,19 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// Get all units
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const units = await prisma.unit.findMany({
+      include: { property: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(units);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch units' });
+  }
+});
+
 // Get units for a property
 router.get('/property/:propertyId', authenticate, async (req: AuthRequest, res: Response) => {
   try {
