@@ -1,10 +1,12 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useTheme } from '@/components/layout/ThemeProvider';
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -64,22 +66,45 @@ export function Sidebar() {
         })}
       </nav>
 
-      <button 
-        onClick={handleLogout}
-        style={{
-          background: 'transparent',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          color: 'var(--danger-color)',
-          padding: '0.75rem',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-        onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-      >
-        🚪 Logout
-      </button>
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <button 
+          onClick={toggleTheme}
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--border-color)',
+            color: 'var(--text-primary)',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+        >
+          {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+        </button>
+
+        <button 
+          onClick={handleLogout}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'var(--danger-color)',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+        >
+          🚪 Logout
+        </button>
+      </div>
     </div>
   );
 }
