@@ -27,12 +27,12 @@ export default function Leases() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1 className="title" style={{ margin: 0 }}>Lease Contracts</h1>
         <Button onClick={() => router.push('/leases/new')}>+ New Lease</Button>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <input 
           type="text" 
           placeholder="Search tenant or shop..."
